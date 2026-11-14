@@ -19,13 +19,20 @@ function App() {
 
     useEffect(() => {
         const loadGuitars = async () => {
+            setLoading(true);
+            setError("");
             try {
                 const response = await fetch("/api/guitars");
                 if (!response.ok) {
                     throw new Error("No se pudo cargar el catálogo.");
                 }
 
-                const guitars: Array<Guitar & { price: number | string }> = await response.json();
+                const body: unknown = await response.json();
+                if (!Array.isArray(body)) {
+                    throw new Error("El catálogo recibido no tiene un formato válido.");
+                }
+
+                const guitars = body as Array<Guitar & { price: number | string }>;
                 setData(guitars.map((guitar) => ({ ...guitar, price: Number(guitar.price) })));
             } catch (requestError) {
                 setError(requestError instanceof Error ? requestError.message : "Error de conexión con el servidor.");
@@ -70,9 +77,22 @@ function App() {
 
                 <div className="row mt-5">
                     {loading && <p className="text-center">Cargando catálogo...</p>}
-                    {error && <p className="text-center text-danger" role="alert">{error}</p>}
+                    {error && (
+                        <div className="alert alert-danger text-center" role="alert">
+                            <p className="mb-2">{error}</p>
+                            <button
+                                type="button"
+                                className="btn btn-outline-danger"
+                                onClick={() => window.location.reload()}
+                            >
+                                Reintentar
+                            </button>
+                        </div>
+                    )}
                     {!loading && !error && data.length === 0 && (
-                        <p className="text-center">No hay guitarras registradas todavía.</p>
+                        <div className="alert alert-warning text-center" role="alert">
+                            No se encontró ninguna guitarra en el catálogo.
+                        </div>
                     )}
                     {data.map((guitar) => (
 

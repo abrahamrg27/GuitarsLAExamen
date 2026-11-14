@@ -15,6 +15,7 @@ const initialForm: GuitarFormData = {
 export default function GuitarForm({ onCreated }: GuitarFormProps) {
     const [form, setForm] = useState(initialForm);
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
     const [saving, setSaving] = useState(false);
 
     const updateField = (field: keyof GuitarFormData, value: string) => {
@@ -27,6 +28,7 @@ export default function GuitarForm({ onCreated }: GuitarFormProps) {
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setError("");
+        setSuccess("");
 
         if (!form.name.trim() || !form.image.trim() || !form.description.trim()) {
             setError("Completa todos los campos.");
@@ -54,6 +56,7 @@ export default function GuitarForm({ onCreated }: GuitarFormProps) {
             const guitar = body as Guitar & { price: number | string };
             onCreated({ ...guitar, price: Number(guitar.price) });
             setForm(initialForm);
+            setSuccess("La guitarra se registró correctamente.");
         } catch (requestError) {
             setError(requestError instanceof Error ? requestError.message : "Error de conexión con el servidor.");
         } finally {
@@ -87,6 +90,7 @@ export default function GuitarForm({ onCreated }: GuitarFormProps) {
                         onChange={(event) => updateField("description", event.target.value)} />
                 </div>
                 {error && <p className="text-danger mb-0" role="alert">{error}</p>}
+                {success && <p className="text-success mb-0" role="status">{success}</p>}
                 <div className="col-12">
                     <button className="btn btn-dark" type="submit" disabled={saving}>
                         {saving ? "Guardando..." : "Registrar guitarra"}
